@@ -1,0 +1,63 @@
+.TH CONVERT-TO-MP3 1 "May 28, 2026" "convert-to-mp3" "User Commands"
+.SH NAME
+convert-to-mp3 \- convert video or audio files to MP3 using VLC
+.SH SYNOPSIS
+.B convert-to-mp3.sh
+.RB [ --force | -f ]
+.I input-file
+.RI [ input-file ...]
+.SH DESCRIPTION
+.B convert-to-mp3.sh
+converts one or more video or audio files to MP3 files using VLC.
+.PP
+For each input file, the output file is written to the same directory
+with the same base name and a
+.B .mp3
+extension.
+.PP
+The script uses a 192 kbps MP3 audio stream, 2 channels, and a
+44100 Hz sample rate.
+.SH OPTIONS
+.TP
+.BR --force , " -f"
+Overwrite an existing output MP3 file.
+.SH OPERANDS
+.TP
+.I input-file
+A video or audio file to convert. More than one input file may be provided.
+.SH EXAMPLES
+.TP
+Convert one file:
+.B ./convert-to-mp3.sh movie.mp4
+.TP
+Convert multiple files:
+.B ./convert-to-mp3.sh movie.mp4 interview.mov audio.wav
+.TP
+Overwrite existing output files:
+.B ./convert-to-mp3.sh --force movie.mp4 interview.mov
+.SH EXIT STATUS
+.TP
+.B 0
+All files converted successfully.
+.TP
+.B 1
+VLC was not found, a file could not be converted, an output already
+existed, or another conversion error occurred.
+.TP
+.B 2
+Invalid usage.
+.SH NOTES
+When multiple files are provided, per-file errors are reported and the
+script continues converting remaining files. If any file fails, the
+final exit status is 1.
+.PP
+VLC is located by checking for
+.B cvlc
+or
+.B vlc
+in
+.B PATH ,
+then by checking the default macOS application path:
+.B /Applications/VLC.app/Contents/MacOS/VLC .
+.SH SEE ALSO
+.BR vlc (1)

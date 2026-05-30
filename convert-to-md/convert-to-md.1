@@ -1,0 +1,150 @@
+.Dd May 29, 2026
+.Dt CONVERT-TO-MD 1
+.Os
+.Sh NAME
+.Nm convert-to-md
+.Nd convert simple text-like documents to Markdown
+.Sh SYNOPSIS
+.Nm
+.Op Fl f
+.Ar file ...
+.Nm
+.Fl t Ar type
+.Op Fl f
+.Op Fl o Ar output.md
+.Sh DESCRIPTION
+.Nm
+is a pure Bash converter for creating Markdown from plain text, simple HTML,
+and simple reStructuredText files.
+.Pp
+When file paths are provided,
+.Nm
+creates a Markdown file next to each source file by replacing the source
+extension with
+.Pa .md .
+For example,
+.Pa page.html
+is written as
+.Pa page.md .
+.Pp
+When input is piped on standard input,
+.Nm
+requires an explicit input type with
+.Fl t
+or
+.Fl -type .
+Piped output is written to standard output unless
+.Fl o
+is provided.
+.Pp
+This program intentionally does not use external document converters.
+Because it is pure Bash, formats that require binary, archive, or layout
+parsing are rejected instead of being converted incorrectly.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl f , Fl -force
+Overwrite an existing Markdown output file.
+.Pp
+Without this option,
+.Nm
+refuses to replace an existing output file.
+.It Fl h , Fl -help
+Show usage information and exit.
+.It Fl o Ar file , Fl -output Ar file
+Write piped conversion output to
+.Ar file
+instead of standard output.
+.Pp
+This option is only valid for piped input.
+.It Fl t Ar type , Fl -type Ar type , Fl -format Ar type
+Specify the input type for piped content.
+.Pp
+Supported values are
+.Cm txt ,
+.Cm html ,
+.Cm htm ,
+and
+.Cm rst .
+.El
+.Sh SUPPORTED FORMATS
+.Bl -tag -width Ds
+.It Cm txt
+Copies plain text content directly into Markdown output.
+.It Cm html , Cm htm
+Performs simple HTML-to-Markdown conversion.
+.Pp
+Recognized HTML includes headings
+.Aq h1
+through
+.Aq h6 ,
+paragraphs, line breaks, unordered and ordered list containers, list items,
+bold tags, italic tags, and simple links.
+.It Cm rst
+Performs simple reStructuredText-to-Markdown conversion.
+.Pp
+Recognized RST includes underline-style headings using repeated marker lines.
+Basic inline markup such as bold and italic is generally left as-is because it
+already resembles Markdown.
+.El
+.Sh UNSUPPORTED FORMATS
+.Nm
+rejects the following formats in pure Bash mode:
+.Pp
+.Bl -bullet -compact
+.It
+RTF
+.It
+DOCX
+.It
+EPUB
+.It
+PDF
+.El
+.Pp
+These formats require parsing binary data, archives, XML packages, or page
+layout structures.
+Use a dedicated converter such as Pandoc if those formats need full Markdown
+conversion.
+.Sh EXIT STATUS
+.Ex -std
+.Pp
+The command exits with a non-zero status if any input file cannot be converted,
+if an output file already exists without
+.Fl f ,
+if a required option value is missing, or if the input format is unsupported.
+.Sh EXAMPLES
+Convert local files and write Markdown files next to them:
+.Bd -literal -offset indent
+\&./convert-to-md.sh notes.txt page.html doc.rst
+.Ed
+.Pp
+Overwrite existing Markdown outputs:
+.Bd -literal -offset indent
+\&./convert-to-md.sh -f page.html
+.Ed
+.Pp
+Convert HTML downloaded from the web and write to standard output:
+.Bd -literal -offset indent
+curl -L "https://example.com/page.html" | \&./convert-to-md.sh --type html
+.Ed
+.Pp
+Convert HTML downloaded from the web and save it to a file:
+.Bd -literal -offset indent
+curl -L "https://example.com/page.html" | \&./convert-to-md.sh --type html -o page.md
+.Ed
+.Pp
+Force overwrite for piped output:
+.Bd -literal -offset indent
+curl -L "https://example.com/page.html" | \&./convert-to-md.sh --type html -f -o page.md
+.Ed
+.Sh LIMITATIONS
+.Nm
+is intentionally conservative.
+It handles simple text-like markup but is not a complete HTML or RST parser.
+Complex nested HTML, scripts, styles, tables, attributes beyond simple links,
+and advanced RST directives may not convert correctly.
+.Pp
+For complete document conversion, use a real document parser or converter.
+.Sh SEE ALSO
+.Xr bash 1 ,
+.Xr curl 1
