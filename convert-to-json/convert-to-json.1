@@ -1,0 +1,144 @@
+.Dd May 29, 2026
+.Dt CONVERT-TO-JSON 1
+.Os
+.Sh NAME
+.Nm convert-to-json
+.Nd convert simple object-storage formats to JSON
+.Sh SYNOPSIS
+.Nm
+.Op Fl f
+.Ar file ...
+.Nm
+.Fl t Ar type
+.Op Fl f
+.Op Fl o Ar output.json
+.Sh DESCRIPTION
+.Nm
+is a pure Bash converter for creating JSON from CSV, SQL-style CSV rows,
+simple YAML, and simple TOML.
+.Pp
+When file paths are provided,
+.Nm
+creates a JSON file next to each source file by replacing the source extension
+with
+.Pa .json .
+For example,
+.Pa data.csv
+is written as
+.Pa data.json .
+.Pp
+When input is piped on standard input,
+.Nm
+requires an explicit input type with
+.Fl t
+or
+.Fl -type .
+Piped output is written to standard output unless
+.Fl o
+is provided.
+.Pp
+This program intentionally does not use external JSON or document converters.
+Because it is pure Bash, YAML and TOML support is conservative and limited to
+simple, predictable data.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl f , Fl -force
+Overwrite an existing JSON output file.
+.Pp
+Without this option,
+.Nm
+refuses to replace an existing output file.
+.It Fl h , Fl -help
+Show usage information and exit.
+.It Fl o Ar file , Fl -output Ar file
+Write piped conversion output to
+.Ar file
+instead of standard output.
+.Pp
+This option is only valid for piped input.
+.It Fl t Ar type , Fl -type Ar type , Fl -format Ar type
+Specify the input type for piped content.
+.Pp
+Supported values are
+.Cm csv ,
+.Cm sql ,
+.Cm yaml ,
+.Cm yml ,
+and
+.Cm toml .
+.El
+.Sh SUPPORTED FORMATS
+.Bl -tag -width Ds
+.It Cm csv
+Converts comma-separated rows to an array of JSON objects.
+The first row is used as object keys.
+.Pp
+Quoted fields, commas inside quoted fields, and escaped double quotes are
+supported.
+Multiline quoted fields are not supported.
+.It Cm sql
+Converts SELECT-like CSV output to an array of JSON objects.
+The first row is used as object keys.
+.Pp
+.Nm
+does not parse SQL statements.
+.It Cm yaml , Cm yml
+Converts simple YAML mappings to JSON objects.
+.Pp
+Supported YAML includes scalar key/value pairs, nested mappings using two-space
+indentation, inline arrays, and scalar list items under a mapping key.
+.It Cm toml
+Converts simple TOML to JSON objects.
+.Pp
+Supported TOML includes scalar key/value pairs, dotted sections, and inline
+arrays.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Pp
+The command exits with a non-zero status if any input file cannot be converted,
+if an output file already exists without
+.Fl f ,
+if a required option value is missing, or if the input format is unsupported.
+.Sh EXAMPLES
+Convert local files and write JSON files next to them:
+.Bd -literal -offset indent
+\&./convert-to-json.sh data.csv config.yaml settings.toml rows.sql
+.Ed
+.Pp
+Overwrite existing JSON outputs:
+.Bd -literal -offset indent
+\&./convert-to-json.sh -f data.csv
+.Ed
+.Pp
+Convert CSV downloaded from the web and write to standard output:
+.Bd -literal -offset indent
+curl -L "https://example.com/data.csv" | \&./convert-to-json.sh --type csv
+.Ed
+.Pp
+Convert TOML from standard input and save it to a file:
+.Bd -literal -offset indent
+curl -L "https://example.com/settings.toml" | \&./convert-to-json.sh --type toml -o settings.json
+.Ed
+.Pp
+Force overwrite for piped output:
+.Bd -literal -offset indent
+curl -L "https://example.com/data.csv" | \&./convert-to-json.sh --type csv -f -o data.json
+.Ed
+.Sh LIMITATIONS
+.Nm
+is intentionally conservative.
+It is not a complete CSV, SQL, YAML, or TOML parser.
+.Pp
+CSV conversion does not support multiline quoted fields.
+.Pp
+YAML conversion does not support anchors, aliases, tags, block scalars, flow
+objects, top-level arrays, arrays of objects, or advanced typing.
+.Pp
+TOML conversion does not support multiline strings, arrays of tables, quoted
+dotted keys, dates, or inline tables.
+.Pp
+For full-spec conversion, use a dedicated parser or converter.
+.Sh SEE ALSO
+.Xr bash 1 ,
+.Xr jq 1
